@@ -48,9 +48,12 @@ function calculateBonusByProfit(index, total, seller) {
  */
 function analyzeSalesData(data, options) {
     // @TODO: Проверка входных данных
-    const { calculateRevenue, calculateBonus } = options; // Сюда передадим функции для расчётов
+    if (!data || !data.sellers || data.sellers.length === 0) {
+        return [];
+    }
 
     // @TODO: Проверка наличия опций
+    const { calculateRevenue, calculateBonus } = options; // Сюда передадим функции для расчётов
 
     // @TODO: Подготовка промежуточных данных для сбора статистики
     const sellerStats = data.sellers.map(seller => ({
@@ -67,20 +70,20 @@ function analyzeSalesData(data, options) {
     sellerStats.map(stats => [stats.id, stats])
     ); 
 
+    const productsArray = data.products || []; // защита если products === undefined
     const productIndex = Object.fromEntries(
-    data.products.map(product => [product.sku, product])
-);
+    productsArray.map(product => [product.sku, product])
+    );
 
     // @TODO: Расчет выручки и прибыли для каждого продавца
-    data.purchase_records.forEach(record => {
-    // находим статистику продавца в индексе
+    const records = data.purchase_records || [];
+    records.forEach(record => {
     const seller = sellerIndex[record.seller_id];
     if (!seller) return; // пропускаем, если продавца нет в базе
     seller.sales_count += 1;
     seller.revenue += record.total_amount;
 
     record.items.forEach(item => {
-        // находим данные о товаре из каталога по sku
         const product = productIndex[item.sku];
         if (!product) return;
 
@@ -92,7 +95,7 @@ function analyzeSalesData(data, options) {
         const itemProfit = itemRevenue - cost;
 
         // увеличиваем общую накопленную прибыль у продавца
-        seller.profit += itemProfit;
+        seller.profit = (seller.profit || 0) + itemProfit;
 
         // учет количества проданных товаров
         if (!seller.products_sold[item.sku]) {
