@@ -48,8 +48,28 @@ function calculateBonusByProfit(index, total, seller) {
  */
 function analyzeSalesData(data, options) {
     // @TODO: Проверка входных данных
-    if (!data || !data.sellers || data.sellers.length === 0) {
-        return [];
+    if (!data) {
+        throw new Error("Data is missing");
+    }
+
+    // 2. Проверка продавцов (должен быть непустой массив)
+    if (!data.sellers || !Array.isArray(data.sellers) || data.sellers.length === 0) {
+        throw new Error("Sellers must be a non-empty array");
+    }
+
+    // 3. Проверка продуктов (должен быть непустой массив)
+    if (!data.products || !Array.isArray(data.products) || data.products.length === 0) {
+        throw new Error("Products must be a non-empty array");
+    }
+
+    // 4. Проверка записей о продажах (должен быть непустой массив)
+    if (!data.purchase_records || !Array.isArray(data.purchase_records) || data.purchase_records.length === 0) {
+        throw new Error("Purchase records must be a non-empty array");
+    }
+
+    // 5. Проверка наличия функций для расчёта в options
+    if (!options || !options.calculateRevenue || !options.calculateBonus) {
+        throw new Error("Calculation functions (calculateRevenue, calculateBonus) are required in options");
     }
 
     // @TODO: Проверка наличия опций
